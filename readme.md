@@ -40,6 +40,7 @@ cd src/end2end
 sh train.sh
 ```
 直接训显存不够，batchsize改成64训练loss直接nan，lr改成0.01可以；改为RESNET18，batchsize=128，loss可以降到1.
+放出来的数据没有清洗Moira_Quirk里怎么有俩男的......
 ### evaluate CFP
 - Download the CFP dataset and preprocess the image. Then download the image list for evaluation
 ```bash
