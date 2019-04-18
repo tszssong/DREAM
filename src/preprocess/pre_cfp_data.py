@@ -25,7 +25,6 @@ if __name__ == '__main__':
         for i in range(celeb_num):
 
             celeb_name = name_mapping[i+1]
-
             sub_dir = os.path.join(dst_data_dir, celeb_name)
             if not os.path.exists(sub_dir):
                 os.mkdir(sub_dir)
@@ -44,3 +43,4 @@ if __name__ == '__main__':
                     img_id = '0'+str(im_n) if len(str(im_n))<2 else str(im_n)
                     img_name = img_id + '.jpg'
                     out_f.write(os.path.join(sub_dir_name, img_name)+'\n')
+                    print os.path.join(sub_dir_name, img_name)
