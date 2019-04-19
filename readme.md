@@ -42,14 +42,15 @@ sh train.sh
 - ResNet50直接训显存不够，batchsize改成64训练loss直接nan，lr改成0.001,200个epoch训练集100%，500个epoch测试集rank1=79，训练loss约0.1,测试loss约1.0；  
 - RESNET18，batchsize=128，lr=0.01,40个epoch训练集100%,100个epoch测试集rank1=75%，训练loss=0.004,测试loss=1.4
 - 放出来的数据没有清洗Moira_Quirk里怎么有俩男的......  
-- 训练需要提供头部偏航角yaw,trainlabel.txt和train_list.txt按行一一对应
+- 训练需要提供头部偏航角yaw,做一个非线性映射到[0,1]区间，trainlabel.txt和train_list.txt按行一一对应
+- 找不到作者的yaw coef非线性映射函数，代码里直接将yaw写死为1训练，resnet18也能到75%
 ```bash
 trainlabel.txt:
 467 10          #label比list多一行，训练样本总数=467 id数=10
-0 1.43247e-13   #id=0 yaw=1.43-13
-0 2.41652e-05   #id=0 yaw=2.41-05
+0 1.43247e-13   #id=0 yaw coef=1.43-13
+0 2.41652e-05   #id=0 yaw coef=2.41-05
 ......
-9 0.000148665   #id=9 yaw=0.00014
+9 0.000148665   #id=9 yaw coef=0.00014
 ```
 ### evaluate CFP
 - Download the CFP dataset and preprocess the image. Then download the image list for evaluation
@@ -103,4 +104,4 @@ unzip model.zip
 cd src/IJBA
 sh eval_ijba.sh
 ```
-
+- IJBA/align_image_1N/split/gallery路径下的list里都是写的绝对路径，需要改成自己的
