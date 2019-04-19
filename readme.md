@@ -39,9 +39,10 @@ unzip msceleb.zip
 cd src/end2end
 sh train.sh
 ```
-直接训显存不够，batchsize改成64训练loss直接nan，lr改成0.01可以；改为RESNET18，batchsize=128，loss可以降到1.  
-放出来的数据没有清洗Moira_Quirk里怎么有俩男的......  
-训练需要提供头部偏航角yaw,trainlabel.txt和train_list.txt按行一一对应
+- ResNet50直接训显存不够，batchsize改成64训练loss直接nan，lr改成0.001,200个epoch训练集100%，500个epoch测试集rank1=79，训练loss约0.1,测试loss约1.0；  
+- RESNET18，batchsize=128，lr=0.01,40个epoch训练集100%,100个epoch测试集rank1=75%，训练loss=0.004,测试loss=1.4
+- 放出来的数据没有清洗Moira_Quirk里怎么有俩男的......  
+- 训练需要提供头部偏航角yaw,trainlabel.txt和train_list.txt按行一一对应
 ```bash
 trainlabel.txt:
 467 10          #label比list多一行，训练样本总数=467 id数=10
@@ -60,7 +61,8 @@ sh align_cfp.sh     ##这里用了test_process_align， ldd看它依赖的库，
 cd data/CFP
 unzip CFP_protocol.zip
 ```
-aligin_cfp.sh里几个变量绝对地址改为自己机器上的CFP开源数据集地址
+- aligin_cfp.sh里几个变量绝对地址改为自己机器上的CFP开源数据集地址  
+- 生成的estimate_pose.txt倒数第二列是yaw
 - Download pretrained model
 ```bash
 # make sure you are in the root directory of DREAM project
