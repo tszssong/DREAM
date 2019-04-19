@@ -104,4 +104,5 @@ unzip model.zip
 cd src/IJBA
 sh eval_ijba.sh
 ```
-- IJBA/align_image_1N/split/gallery路径下的list里都是写的绝对路径，需要改成自己的
+- IJBA/align_image_1N/split/gallery路径下的list里都是写的绝对路径，需要改成自己的，用processIJBA.py暴力改
+- eval_ijba.sh跑到最后会死掉，貌似是多线程问题，待解决

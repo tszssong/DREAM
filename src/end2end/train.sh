@@ -11,6 +11,6 @@ curr_date=$(date +'%m_%d_%H_%M')
 log_file="./log/$curr_date.log"
 
 # train the model with GPUs 0, 1, 2, and 3
-CUDA_VISIBLE_DEVICES=0,1,2,3 python main.py  \
+CUDA_VISIBLE_DEVICES=0 python main.py  \
     --end2end   --img_dir ../../data/msceleb/image \
     2>&1 | tee $log_file

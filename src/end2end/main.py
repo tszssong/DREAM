@@ -25,19 +25,19 @@ model_names = sorted(name for name in models.__dict__
 
 parser = argparse.ArgumentParser(description='PyTorch CelebA Training')
 parser.add_argument('--img_dir', metavar='DIR', default='', help='path to dataset')
-parser.add_argument('--arch', '-a', metavar='ARCH', default='resnet50', choices=model_names,
+parser.add_argument('--arch', '-a', metavar='ARCH', default='resnet18', choices=model_names,
                     help='model architecture: ' +
                         ' | '.join(model_names) +
                         ' (default: alexnet)')
 parser.add_argument('-j', '--workers', default=16, type=int, metavar='N',
                     help='number of data loading workers (default: 4)')
-parser.add_argument('--epochs', default=60, type=int, metavar='N',
+parser.add_argument('--epochs', default=600, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=256, type=int,
+parser.add_argument('-b', '--batch-size', default=128, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
-parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
+parser.add_argument('--lr', '--learning-rate', default=0.01, type=float,
                     metavar='LR', help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum')
@@ -269,11 +269,11 @@ def validate(val_loader, model, criterion):
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
 
     full_filename = os.path.join(args.model_dir, filename)
-    full_bestname = os.path.join(args.model_dir, 'model_best.pth.tar')
+    full_bestname = os.path.join(args.model_dir, args.arch+'_best.pth.tar')
     torch.save(state, full_filename)
     epoch_num = state['epoch']
-    if epoch_num%5==0 and epoch_num>=0:
-        torch.save(state, full_filename.replace('checkpoint','checkpoint_'+str(epoch_num)))
+    if epoch_num%10==0 and epoch_num>=0:
+        torch.save(state, full_filename.replace('checkpoint',args.arch+'_'+str(epoch_num)))
     if is_best:
         shutil.copyfile(full_filename, full_bestname)
 

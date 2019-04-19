@@ -21,6 +21,7 @@ def load_imgs(img_dir, image_list_file, label_file):
                 img_path = os.path.join(img_dir, line.strip())
                 record = laf.readline().strip().split()
                 label,yaw = int(record[0]), float(record[1])
+                yaw = 1
                 max_label = max(max_label, label)
                 imgs.append((img_path, label, yaw))
     assert(total_num == len(imgs))
