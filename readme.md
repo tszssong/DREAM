@@ -39,8 +39,17 @@ unzip msceleb.zip
 cd src/end2end
 sh train.sh
 ```
-直接训显存不够，batchsize改成64训练loss直接nan，lr改成0.01可以；改为RESNET18，batchsize=128，loss可以降到1.
-放出来的数据没有清洗Moira_Quirk里怎么有俩男的......
+直接训显存不够，batchsize改成64训练loss直接nan，lr改成0.01可以；改为RESNET18，batchsize=128，loss可以降到1.  
+放出来的数据没有清洗Moira_Quirk里怎么有俩男的......  
+训练需要提供头部偏航角yaw,trainlabel.txt和train_list.txt按行一一对应
+```bash
+trainlabel.txt:
+467 10          #label比list多一行，训练样本总数=467 id数=10
+0 1.43247e-13   #id=0 yaw=1.43-13
+0 2.41652e-05   #id=0 yaw=2.41-05
+......
+9 0.000148665   #id=9 yaw=0.00014
+```
 ### evaluate CFP
 - Download the CFP dataset and preprocess the image. Then download the image list for evaluation
 ```bash
