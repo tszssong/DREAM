@@ -1,4 +1,8 @@
 *.bak
+*.pth
+*.tar
+*.pth*
+*.idea
 *.pyc
 *.swp
 *.zip
