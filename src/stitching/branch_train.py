@@ -49,7 +49,8 @@ def main():
 
         output = model(batch_train_feat, batch_norm_angle)
         loss = criterion(output, batch_target_feat)
-        losses.update(loss.data[0], loss.size(0))
+        losses.update(loss.item(), torch.tensor([loss.item()]).size(0))
+        #losses.update(loss.data[0], loss.size(0))
 
         # compute gradient and do SGD step
         optimizer.zero_grad()

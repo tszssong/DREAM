@@ -55,11 +55,11 @@ parser.add_argument('--model_dir','-m', default='./model', type=str)
 parser.add_argument('--end2end', action='store_true',\
         help='if true, using end2end with dream block, else, using naive architecture')
 
-best_prec1 = 0
+best_prec1 = 0   
 
-
+     
 def main():
-    global args, best_prec1
+    global args, best_prec1  
     args = parser.parse_args()
 
     print('img_dir:', args.img_dir)
@@ -82,7 +82,7 @@ def main():
     val_dataset =  MsCelebDataset(args.img_dir, val_list_file, val_label_file, 
             transforms.Compose([caffe_crop,transforms.ToTensor()]))
     val_loader = torch.utils.data.DataLoader(
-        val_dataset,
+        val_dataset,   
         batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=True)
 
@@ -180,8 +180,8 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # measure data loading time
         data_time.update(time.time() - end)
 
-        target = target.cuda(async=True)
-        yaw = yaw.float().cuda(async=True)
+        target = target.cuda()
+        yaw = yaw.float().cuda()
         input_var = torch.autograd.Variable(input)
         yaw_var = torch.autograd.Variable(yaw)
         target_var = torch.autograd.Variable(target)
@@ -193,9 +193,12 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
         # measure accuracy and record loss
         prec1, prec5 = accuracy(pred_score.data, target, topk=(1, 5))
-        losses.update(loss.data[0], input.size(0))
-        top1.update(prec1[0], input.size(0))
-        top5.update(prec5[0], input.size(0))
+        # losses.update(loss.data[0], input.size(0))
+        # top1.update(prec1[0], input.size(0))
+        # top5.update(prec5[0], input.size(0))
+        losses.update(loss.item(),  1)
+        top1.update(prec1.item(), 1)
+        top5.update(prec5.item(), 1)
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
@@ -230,8 +233,9 @@ def validate(val_loader, model, criterion):
 
     end = time.time()
     for i, (input, target, yaw) in enumerate(val_loader):
-        target = target.cuda(async=True)
-        yaw = yaw.float().cuda(async=True)
+        target = target.cuda()
+        yaw = yaw.float().cuda()
+        # with torch.no_grad():
         input_var = torch.autograd.Variable(input, volatile=True)
         target_var = torch.autograd.Variable(target, volatile=True)
         yaw_var = torch.autograd.Variable(yaw)
@@ -243,9 +247,12 @@ def validate(val_loader, model, criterion):
 
         # measure accuracy and record loss
         prec1, prec5 = accuracy(pred_score.data, target, topk=(1, 5))
-        losses.update(loss.data[0], input.size(0))
-        top1.update(prec1[0], input.size(0))
-        top5.update(prec5[0], input.size(0))
+        # losses.update(loss.data[0], input.size(0))
+        # top1.update(prec1[0], input.size(0))
+        # top5.update(prec5[0], input.size(0))
+        losses.update(loss.item(), input.size(0))
+        top1.update(prec1.item(), input.size(0))
+        top5.update(prec5.item(), input.size(0))
 
         # measure elapsed time
         batch_time.update(time.time() - end)
