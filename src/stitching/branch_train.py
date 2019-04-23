@@ -61,7 +61,7 @@ def main():
             print('Iter: [{0}/{1}]\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'.format(
                    iter, args.iters, loss=losses))
-
+        sys.stdout.flush()
     torch.save({'state_dict': model.state_dict()}, 'checkpoint.pth')
 
 
