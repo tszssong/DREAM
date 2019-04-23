@@ -8,6 +8,7 @@ The code is wriiten by [Yu Rong](https://github.com/penincillin) and [Kaidi Cao]
 - Anaconda2 + Python 2.7
 - opencv3.4.1
 - 按作者git下载模型和数据
+- 注意作者的pytorch版本小于0.4,大于0.4版本的pytorch需要改一些代码(data[0]改成item()这类的）
 ## Train DREAM Block
 ### stitch Training
 Prepare the feature extracted from any face recognition model (You could use the pretrained model we prepared).   
