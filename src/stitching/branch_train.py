@@ -17,7 +17,7 @@ parser.add_argument('-ff', '--feat-file', default='../../data/stitching/ext_feat
         type=str, metavar='N', help='extracted feature')
 parser.add_argument('-b', '--batch-size', default=256, type=int, metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('-f', '--feat-len', default=256, type=int, metavar='F', help='feature length (default: 256)')
-parser.add_argument('--iters', default=10000, type=int, metavar='N', help='number of total iters to run')
+parser.add_argument('--iters', default=1000000, type=int, metavar='N', help='number of total iters to run')
 parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float, metavar='LR', help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M', help='momentum')
 parser.add_argument('--weight-decay', '--wd', default=1e-4, type=float, metavar='W', help='weight decay (default: 1e-4)')
