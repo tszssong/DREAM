@@ -29,13 +29,13 @@ parser.add_argument('--arch', '-a', metavar='ARCH', default='resnet18', choices=
                     help='model architecture: ' +
                         ' | '.join(model_names) +
                         ' (default: alexnet)')
-parser.add_argument('-j', '--workers', default=16, type=int, metavar='N',
-                    help='number of data loading workers (default: 4)')
-parser.add_argument('--epochs', default=600, type=int, metavar='N',
+parser.add_argument('-j', '--workers', default=28, type=int, metavar='N',
+                    help='number of data loading workers (default: 16)')
+parser.add_argument('--epochs', default=6000, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=256, type=int,
+parser.add_argument('-b', '--batch-size', default=1024, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
                     metavar='LR', help='initial learning rate')
@@ -63,11 +63,18 @@ def main():
     args = parser.parse_args()
 
     print('img_dir:', args.img_dir)
-    print('end2end?:', args.end2end)
+    print('end2end?:', args.end2end, 'workers:', args.workers)
+    print('batchsize:', args.batch_size, 'lr:', args.lr, 'epochs:', args.epochs)
+    print('net:', args.arch, 'resume:',args.resume, 'pretrained:', args.pretrained)
 
     # load data and prepare dataset
-    train_list_file = '../../data/msceleb/train_list.txt'
-    train_label_file = '../../data/msceleb/train_label.txt'
+    # train_list_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/train_list.txt'
+    # train_label_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/train_label.txt'
+    
+    #train_list_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/celeb_list.txt'
+    #train_label_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/celeb_label.txt'
+    train_list_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/total_list.txt'
+    train_label_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/total_label.txt'
     caffe_crop = CaffeCrop('train')
     train_dataset =  MsCelebDataset(args.img_dir, train_list_file, train_label_file, 
             transforms.Compose([caffe_crop,transforms.ToTensor()]))
@@ -77,8 +84,8 @@ def main():
         num_workers=args.workers, pin_memory=True)
    
     caffe_crop = CaffeCrop('test')
-    val_list_file = '../../data/msceleb/test_list.txt'
-    val_label_file = '../../data/msceleb/test_label.txt'
+    val_list_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/msceleb/test_list.txt'
+    val_label_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/msceleb/test_label.txt'
     val_dataset =  MsCelebDataset(args.img_dir, val_list_file, val_label_file, 
             transforms.Compose([caffe_crop,transforms.ToTensor()]))
     val_loader = torch.utils.data.DataLoader(
@@ -86,7 +93,7 @@ def main():
         batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=True)
 
-    assert(train_dataset.max_label == val_dataset.max_label)
+    # assert(train_dataset.max_label == val_dataset.max_label)
     class_num = train_dataset.max_label + 1
 
     print('class_num: ',class_num)
@@ -161,6 +168,7 @@ def main():
             'best_prec1': best_prec1,
             'optimizer' : optimizer.state_dict(),
         }, is_best)
+        sys.stdout.flush()
 
 
 def train(train_loader, model, criterion, optimizer, epoch):
@@ -218,6 +226,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
                   'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'.format(
                    epoch, i, len(train_loader), batch_time=batch_time,
                    data_time=data_time, loss=losses, top1=top1, top5=top5))
+        sys.stdout.flush()
 
 
 def validate(val_loader, model, criterion):
@@ -279,7 +288,7 @@ def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
     full_bestname = os.path.join(args.model_dir, args.arch+'_best.pth.tar')
     torch.save(state, full_filename)
     epoch_num = state['epoch']
-    if epoch_num%10==0 and epoch_num>=0:
+    if epoch_num%1==0 and epoch_num>=0:
         torch.save(state, full_filename.replace('checkpoint',args.arch+'_'+str(epoch_num)))
     if is_best:
         shutil.copyfile(full_filename, full_bestname)

@@ -11,7 +11,7 @@ curr_date=$(date +'%m_%d_%H_%M')
 log_file="./log/$curr_date.log"
 
 # train the model with GPUs 0
-CUDA_VISIBLE_DEVICES=0,1,2,3 python main.py  \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python main.py  \
     --end2end   \
-    --img_dir /media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/ \
+    --img_dir /cloud_data01/zhengmeisong/TrainData/dreamData/ \
     2>&1 | tee $log_file
