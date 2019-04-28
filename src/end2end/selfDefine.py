@@ -3,7 +3,7 @@ import random as rd
 
 from PIL import Image
 import numpy as np
-
+import cv2
 import torch
 import torch.nn.functional as F
 import torch.utils.data as data
@@ -100,4 +100,10 @@ class CaffeCrop(object):
 
         mid_img = img.crop(crop_box)
         res_img = mid_img.resize( (final_width, final_height) )
+        # print(mid_img.shape, res_img.shape)
+        # mid_img.show()
+        # res_img.show()
+        # cv2.imshow("mid_img", mid_img)
+        # cv2.imshow("res_img", res_img)
+        # cv2.waitKey()
         return res_img

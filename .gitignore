@@ -16,3 +16,6 @@ data/
 msceleb/
 model/
 log/
+image/*
+image/align_sample/1.jpg
+LICENSE
