@@ -85,7 +85,8 @@ def extract_feat(arch, resume):
         batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=True)
 
-    class_num = 13386
+    class_num = 180855
+    #class_num = 13386
     
     model = None
     assert(arch in ['resnet18','resnet50','resnet101'])
@@ -118,7 +119,7 @@ def extract_feat(arch, resume):
     with open(frontal_feat_file, 'wb') as bin_f:
         bin_f.write(st.pack('ii', data_num, feat_dim))
         for i, (input, yaw) in enumerate(frontal_loader):
-            yaw = yaw.float().cuda(async=True)
+            yaw = yaw.float().cuda()
             input_var = torch.autograd.Variable(input, volatile=True)
             yaw_var = torch.autograd.Variable(yaw, volatile=True)
             output = model(input_var, yaw_var)
@@ -133,7 +134,7 @@ def extract_feat(arch, resume):
     with open(profile_feat_file, 'wb') as bin_f:
         bin_f.write(st.pack('ii', data_num, feat_dim))
         for i, (input,yaw) in enumerate(profile_loader):
-            yaw = yaw.float().cuda(async=True)
+            yaw = yaw.float().cuda()
             input_var = torch.autograd.Variable(input, volatile=True)
             yaw_var = torch.autograd.Variable(yaw, volatile=True)
             output = model(input_var, yaw_var)
@@ -146,9 +147,12 @@ def extract_feat(arch, resume):
 
 if __name__ == '__main__':
     
-    infos = [ ('resnet50_naive', '../../data/model/cfp_res50_naive.pth.tar'), 
-              ('resnet50_end2end', '../../data/model/cfp_res50_end2end.pth.tar'), ]
+    #infos = [ ('resnet50_naive', '../../data/model/cfp_res50_naive.pth.tar'), 
+     #         ('resnet50_end2end', '../../data/model/cfp_res50_end2end.pth.tar'), ]
 
+    infos = [ ('resnet18_end2end', '../../data/model/resnet18_best.pth.tar'), 
+              ('resnet18_end2end', '../../data/model/resnet18_32.pth.tar'), ]
+    
 
     for arch, model_path in infos:
         print("{} {}".format(arch, model_path))
