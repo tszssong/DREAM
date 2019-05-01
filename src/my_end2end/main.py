@@ -29,9 +29,9 @@ parser.add_argument('--arch', '-a', metavar='ARCH', default='resnet18', choices=
                     help='model architecture: ' +
                         ' | '.join(model_names) +
                         ' (default: alexnet)')
-parser.add_argument('-j', '--workers', default=28, type=int, metavar='N',
+parser.add_argument('-j', '--workers', default=36, type=int, metavar='N',
                     help='number of data loading workers (default: 16)')
-parser.add_argument('--epochs', default=6000, type=int, metavar='N',
+parser.add_argument('--epochs', default=100, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
@@ -320,7 +320,7 @@ def adjust_learning_rate(optimizer, epoch):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     #lr = args.lr * (0.1 ** (epoch // 30))
     #if epoch in [int(args.epochs*0.8), int(args.epochs*0.9), int(args.epochs*0.95)]:
-    if epoch in [10, 20, 30]:
+    if epoch in [10, 20, 30, 40, 50]:
         for param_group in optimizer.param_groups:
             param_group['lr'] *= 0.1
 
