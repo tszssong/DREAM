@@ -1,3 +1,4 @@
 ## 
-###### pretrained 和 resume:  
-pretrained可选择跳过部分层，resume全加载。当前pretrained跳过最后一层全连接用于不同id数的训练数据
+###### pretrained 锟斤拷 resume:  
+pretrained锟斤拷选锟斤拷锟斤拷锟斤拷锟斤拷锟街层，resume全锟斤拷锟截★拷锟斤拷前pretrained锟斤拷锟斤拷锟斤拷锟揭伙拷锟饺拷锟斤拷锟斤拷锟斤拷诓锟酵琲d锟斤拷锟斤拷训锟斤拷锟斤拷锟斤拷  
+resume浼氭牴鎹姞杞界殑epoch鎶妔tart_epoch鏀逛负瀵瑰簲鐨勬鏁帮紝娉ㄦ剰adjust_lr瑕佸拰epoch瀵瑰簲

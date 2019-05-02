@@ -35,7 +35,7 @@ parser.add_argument('--epochs', default=100, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=1024, type=int,
+parser.add_argument('-b', '--batch-size', default=64, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=0.01, type=float,
                     metavar='LR', help='initial learning rate')
@@ -67,14 +67,8 @@ def main():
     print('batchsize:', args.batch_size, 'lr:', args.lr, 'epochs:', args.epochs)
     print('net:', args.arch, 'resume:',args.resume, 'pretrained:', args.pretrained)
 
-    # load data and prepare dataset
-    # train_list_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/train_list.txt'
-    # train_label_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/train_label.txt'
-    
-    #train_list_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/celeb_list.txt'
-    #train_label_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/celeb_label.txt'
-    train_list_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/total_list.txt'
-    train_label_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/total_label.txt'
+    train_list_file = '/home/ubuntu/zms/wkspace/myDream/data/msceleb/train_list.txt'
+    train_label_file = '/home/ubuntu/zms/wkspace/myDream/data/msceleb/train_label.txt'
     caffe_crop = CaffeCrop('train')
     train_dataset =  MsCelebDataset(args.img_dir, train_list_file, train_label_file, 
             transforms.Compose([caffe_crop,transforms.ToTensor()]))
@@ -84,8 +78,8 @@ def main():
         num_workers=args.workers, pin_memory=True)
    
     caffe_crop = CaffeCrop('test')
-    val_list_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/msceleb/test_list.txt'
-    val_label_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/msceleb/test_label.txt'
+    val_list_file = '/home/ubuntu/zms/wkspace/myDream/data/msceleb/test_list.txt'
+    val_label_file = '/home/ubuntu/zms/wkspace/myDream/data/msceleb/test_label.txt'
     val_dataset =  MsCelebDataset(args.img_dir, val_list_file, val_label_file, 
             transforms.Compose([caffe_crop,transforms.ToTensor()]))
     val_loader = torch.utils.data.DataLoader(
@@ -221,15 +215,14 @@ def train(train_loader, model, criterion, optimizer, epoch):
         end = time.time()
 
         if i % args.print_freq == 0:
-            print('Epoch: [{0}][{1}/{2}][{3}]\t'
-                  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                  'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
+            print('Epoch: [{0}][{1}/{2}]\t'
+                  'LR {lr:.3f}\t'
                   'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                   'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'
                   'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'.format(
                    epoch, i, len(train_loader), 
-                   optimizer.param_groups[0]['lr'], batch_time=batch_time,
-                   data_time=data_time, loss=losses, top1=top1, top5=top5))
+                   lr=optimizer.param_groups[0]['lr'], 
+                   loss=losses, top1=top1, top5=top5))
         sys.stdout.flush()
 
 
