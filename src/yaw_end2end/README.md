@@ -1,4 +1,4 @@
-## 
+## 带yaw的版本
 ###### pretrained vs. resume:  
 pretrained可以选择加载部分层 resume完全加载
 当前pretrained不加载最后一层全连接，以适应不同训练数据的不同id数  
