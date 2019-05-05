@@ -94,7 +94,8 @@ def eval_roc_main():
     profile_feats = load_feat(profile_feat_file)
 
     # protocol_dir = '/mnt/SSD/rongyu/data/cfp/cfp_align/protocol/Split'
-    protocol_dir = '/home/ubuntu/zms/data/cfp/cfp-dataset/Protocol/Split'
+    #protocol_dir = '/home/ubuntu/zms/data/cfp/cfp-dataset/Protocol/Split'
+    protocol_dir = '/cloud_data01/zhengmeisong/wkspace/myDream/data/cfp-dataset/Protocol/Split'
     pair_types = ['FF', 'FP']
     split_num = 10
 

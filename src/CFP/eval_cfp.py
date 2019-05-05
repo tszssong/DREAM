@@ -35,7 +35,7 @@ parser.add_argument('--epochs', default=90, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=256, type=int,
+parser.add_argument('-b', '--batch-size', default=2, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
 parser.add_argument('--lr', '--learning-rate', default=0.1, type=float,
                     metavar='LR', help='initial learning rate')
@@ -85,7 +85,8 @@ def extract_feat(arch, resume):
         batch_size=args.batch_size, shuffle=False,
         num_workers=args.workers, pin_memory=True)
 
-    class_num = 180855
+    class_num = 85742
+    #class_num = 180855
     #class_num = 13386
     
     model = None
@@ -150,8 +151,7 @@ if __name__ == '__main__':
     #infos = [ ('resnet50_naive', '../../data/model/cfp_res50_naive.pth.tar'), 
      #         ('resnet50_end2end', '../../data/model/cfp_res50_end2end.pth.tar'), ]
 
-    infos = [ ('resnet18_end2end', '../../data/model/resnet18_best.pth.tar'), 
-              ('resnet18_end2end', '../../data/model/resnet18_32.pth.tar'), ]
+    infos = [ ('resnet18_end2end', '../../data/model/resnet18_38.pth.tar') ]
     
 
     for arch, model_path in infos:
