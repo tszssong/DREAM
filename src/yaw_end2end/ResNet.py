@@ -167,6 +167,7 @@ class ResNet(nn.Module):
             yaw = yaw.expand_as(raw_feature)
             
             feature = yaw * raw_feature + mid_feature
+            #print('yaw=%.9f, raw=%.6f, mid=%.6f, fea=%.6f\n'%(yaw[0][0],raw_feature[0][0],mid_feature[0][0], feature[0][0]))
         else:
             feature = mid_feature
 

@@ -23,10 +23,14 @@ def load_imgs(img_dir, image_list_file, label_file):
             for line in imf:
                 img_path = os.path.join(img_dir, line.strip())
                 record = laf.readline().strip().split()
-                label,yaw = int(record[0]), float(record[2])
-                coef_yaw = sigmoid(10.0*(abs(yaw)/45.0-1))
-                if yaw>=40 or yaw <=-40:
-                    print ('%6d, %6.2f, %.9f'%(label, yaw, coef_yaw))
+                if 'test' in image_list_file:
+                    label, coef_yaw = int(record[0]), float(record[1])
+                else:
+                    label,yaw = int(record[0]), float(record[2])
+                    coef_yaw = sigmoid(10.0*(abs(yaw)/45.0-1))
+                
+                #if yaw>=40 or yaw <=-40:
+                    #print ('%6d, %6.2f, %.9f'%(label, yaw, coef_yaw))
                 max_label = max(max_label, label)
                 #imgs.append((img_path, label, yaw))
                 imgs.append((img_path, label, coef_yaw))
