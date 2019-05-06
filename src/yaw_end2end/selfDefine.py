@@ -1,6 +1,7 @@
 import os, sys, shutil
 import random as rd
 import math
+import cv2
 
 from PIL import Image
 import numpy as np
@@ -9,7 +10,7 @@ import torch.nn.functional as F
 import torch.utils.data as data
 from torch.autograd import Variable
 from torch.nn.modules.loss import _WeightedLoss
-
+import torchvision.transforms as transforms
 def sigmoid(x):
     return 1./(1.+math.exp(-x))
 
@@ -54,9 +55,6 @@ class MsCelebDataset(data.Dataset):
     def __len__(self):
         return len(self.imgs)
 
-
-
-
 class CaffeCrop(object):
     """
     This class take the same behavior as sensenet
@@ -67,17 +65,17 @@ class CaffeCrop(object):
 
     def __call__(self, img):
         # pre determined parameters
-        final_size = 224
+        final_size = 112
         final_width = final_height = final_size
         if self.phase == 'train':
-            crop_size = 220
+            crop_size = 96
         else:
             crop_size = 110
         crop_height = crop_width = crop_size
         crop_center_y_offset = 15
         crop_center_x_offset = 0
         if self.phase == 'train':
-            scale_aug = 0.02
+            scale_aug = 0.01
             trans_aug = 0.01
         else:
             scale_aug = 0.0
@@ -113,10 +111,38 @@ class CaffeCrop(object):
 
         mid_img = img.crop(crop_box)
         res_img = mid_img.resize( (final_width, final_height) )
-        # print(mid_img.shape, res_img.shape)
         # mid_img.show()
         # res_img.show()
-        # cv2.imshow("mid_img", mid_img)
-        # cv2.imshow("res_img", res_img)
-        # cv2.waitKey()
         return res_img
+
+
+if __name__ == '__main__':
+    show_length = 6
+    show_size = 112
+    train_list_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/ms1m_emore_img/256_list.txt'
+    train_label_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/ms1m_emore_img/256_label_angle.txt'
+    caffe_crop = CaffeCrop('train')
+    train_dataset =  MsCelebDataset('./', train_list_file, train_label_file, 
+            transforms.Compose([caffe_crop,transforms.ToTensor()]))
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset, batch_size=show_length*show_length, shuffle=True,
+        num_workers=2, pin_memory=True)
+    show_sample_img = np.zeros((int(show_length*show_size), int(show_length*show_size),3))
+    for i, (input, target, yaw) in enumerate(train_loader):
+        for m in range(show_length):
+            for n in range(show_length):
+                b = m*show_length + n
+                img = input[b].numpy()
+                img = img.transpose((1,2,0))
+                print(type(img), img.dtype, img.size, img.shape)
+                im = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+                id_label = target[b].numpy()
+                cv2.putText(im, '%d'%(id_label), (2, 30), cv2.FONT_HERSHEY_SIMPLEX,0.8,(0,0,255),2)
+                id_yaw = yaw[b].numpy()
+                cv2.putText(im, '%.9f'%(id_yaw), (2, 90), cv2.FONT_HERSHEY_SIMPLEX,0.4,(0,0,255),1)
+                show_sample_img[n*show_size:(n+1)*show_size, m*show_size:(m+1)*show_size] = im
+
+        cv2.imshow('im',show_sample_img)
+        cv2.waitKey()
+       
+
