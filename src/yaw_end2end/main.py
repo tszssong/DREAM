@@ -67,8 +67,8 @@ def main():
     print('batchsize:', args.batch_size, 'lr:', args.lr, 'epochs:', args.epochs)
     print('net:', args.arch, 'resume:',args.resume, 'pretrained:', args.pretrained)
 
-    train_list_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/total_list.txt'
-    train_label_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/total_label_angle.txt'
+    train_list_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/ms1m_emore_img/total_list.txt'
+    train_label_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/ms1m_emore_img/total_label_angle.txt'
     caffe_crop = CaffeCrop('train')
     train_dataset =  MsCelebDataset(args.img_dir, train_list_file, train_label_file, 
             transforms.Compose([caffe_crop,transforms.ToTensor()]))
@@ -78,8 +78,8 @@ def main():
         num_workers=args.workers, pin_memory=True)
    
     caffe_crop = CaffeCrop('test')
-    val_list_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/msceleb/test_list.txt'
-    val_label_file = '/cloud_data01/zhengmeisong/TrainData/dreamData/msceleb/test_label.txt'
+    val_list_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/msceleb/test_list.txt'
+    val_label_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/msceleb/test_label.txt'
     val_dataset =  MsCelebDataset(args.img_dir, val_list_file, val_label_file, 
             transforms.Compose([caffe_crop,transforms.ToTensor()]))
     val_loader = torch.utils.data.DataLoader(
