@@ -11,6 +11,7 @@ pick_data.py
 eval_res.txt
 
 __pycache__/
+data
 ./data
 data/
 msceleb/

@@ -65,17 +65,17 @@ class CaffeCrop(object):
 
     def __call__(self, img):
         # pre determined parameters
-        final_size = 112
+        final_size = 224
         final_width = final_height = final_size
         if self.phase == 'train':
-            crop_size = 96
+            crop_size = 220
         else:
             crop_size = 110
         crop_height = crop_width = crop_size
         crop_center_y_offset = 15
         crop_center_x_offset = 0
         if self.phase == 'train':
-            scale_aug = 0.01
+            scale_aug = 0.02
             trans_aug = 0.01
         else:
             scale_aug = 0.0
@@ -117,10 +117,10 @@ class CaffeCrop(object):
 
 
 if __name__ == '__main__':
-    show_length = 6
-    show_size = 112
-    train_list_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/ms1m_emore_img/256_list.txt'
-    train_label_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/ms1m_emore_img/256_label_angle.txt'
+    show_length = 3
+    show_size = 224
+    train_list_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/data/ms1m_emore_img/256_list.txt'
+    train_label_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/data/ms1m_emore_img/256_label_angle.txt'
     caffe_crop = CaffeCrop('train')
     train_dataset =  MsCelebDataset('./', train_list_file, train_label_file, 
             transforms.Compose([caffe_crop,transforms.ToTensor()]))
