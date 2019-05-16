@@ -29,11 +29,7 @@ def load_imgs(img_dir, image_list_file, label_file):
                 else:
                     label,yaw = int(record[0]), float(record[2])
                     coef_yaw = sigmoid(10.0*(abs(yaw)/45.0-1))
-                
-                #if yaw>=40 or yaw <=-40:
-                    #print ('%6d, %6.2f, %.9f'%(label, yaw, coef_yaw))
                 max_label = max(max_label, label)
-                #imgs.append((img_path, label, yaw))
                 imgs.append((img_path, label, coef_yaw))
     assert(total_num == len(imgs))
     assert(label_num == max_label+1)

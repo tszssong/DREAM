@@ -29,15 +29,15 @@ parser.add_argument('--arch', '-a', metavar='ARCH', default='resnet18', choices=
                     help='model architecture: ' +
                         ' | '.join(model_names) +
                         ' (default: alexnet)')
-parser.add_argument('-j', '--workers', default=18, type=int, metavar='N',
+parser.add_argument('-j', '--workers', default=5, type=int, metavar='N',
                     help='number of data loading workers (default: 16)')
-parser.add_argument('--epochs', default=120, type=int, metavar='N',
+parser.add_argument('--epochs', default=80, type=int, metavar='N',
                     help='number of total epochs to run')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N',
                     help='manual epoch number (useful on restarts)')
-parser.add_argument('-b', '--batch-size', default=64, type=int,
+parser.add_argument('-b', '--batch-size', default=256, type=int,
                     metavar='N', help='mini-batch size (default: 256)')
-parser.add_argument('--lr', '--learning-rate', default=0.01, type=float,
+parser.add_argument('--lr', '--learning-rate', default=0.001, type=float,
                     metavar='LR', help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, metavar='M',
                     help='momentum')
@@ -49,7 +49,7 @@ parser.add_argument('--resume', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
 parser.add_argument('--pretrained', default='', type=str, metavar='PATH',
                     help='path to latest checkpoint (default: none)')
-parser.add_argument('-e', '--evaluate', dest='evaluate', action='store_true',
+parser.add_argument('-e', '--evaluate', dest='', action='store_true',
                     help='evaluate model on validation set')
 parser.add_argument('--model_dir','-m', default='./model', type=str)
 parser.add_argument('--end2end', action='store_true',\
@@ -62,13 +62,13 @@ def main():
     global args, best_prec1  
     args = parser.parse_args()
 
-    print('img_dir:', args.img_dir)
-    print('end2end?:', args.end2end, 'workers:', args.workers)
-    print('batchsize:', args.batch_size, 'lr:', args.lr, 'epochs:', args.epochs)
-    print('net:', args.arch, 'resume:',args.resume, 'pretrained:', args.pretrained)
+    print('[img_dir:]', args.img_dir)
+    print('[end2end?:]', args.end2end, '[workers:]', args.workers)
+    print('[batchsize:]', args.batch_size, '[lr:]', args.lr, '[epochs:]', args.epochs)
+    print('[net:]', args.arch, '[resume:]',args.resume, '[pretrained:]', args.pretrained)
 
-    train_list_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/ms1m_emore_img/total_list.txt'
-    train_label_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/ms1m_emore_img/total_label_angle.txt'
+    train_list_file = '../../../../../data/ms1m_emore_img/total_list.txt'
+    train_label_file = '../../../../../data/ms1m_emore_img/total_label_angle.txt'
     caffe_crop = CaffeCrop('train')
     train_dataset =  MsCelebDataset(args.img_dir, train_list_file, train_label_file, 
             transforms.Compose([caffe_crop,transforms.ToTensor()]))
@@ -77,19 +77,7 @@ def main():
         batch_size=args.batch_size, shuffle=True,
         num_workers=args.workers, pin_memory=True)
    
-    caffe_crop = CaffeCrop('test')
-    val_list_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/msceleb/test_list.txt'
-    val_label_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/msceleb/test_label.txt'
-    val_dataset =  MsCelebDataset(args.img_dir, val_list_file, val_label_file, 
-            transforms.Compose([caffe_crop,transforms.ToTensor()]))
-    val_loader = torch.utils.data.DataLoader(
-        val_dataset,   
-        batch_size=args.batch_size, shuffle=False,
-        num_workers=args.workers, pin_memory=True)
-
-    # assert(train_dataset.max_label == val_dataset.max_label)
     class_num = train_dataset.max_label + 1
-
     print('class_num: ',class_num)
     
     # prepare model
@@ -140,11 +128,6 @@ def main():
 
     cudnn.benchmark = True
 
-   
-
-    if args.evaluate:
-        validate(val_loader, model, criterion)
-        return
 
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, epoch)
@@ -152,12 +135,8 @@ def main():
         # train for one epoch
         train(train_loader, model, criterion, optimizer, epoch)
 
-        # evaluate on validation set
-        prec1 = validate(val_loader, model, criterion)
-
         # remember best prec@1 and save checkpoint
-        is_best = prec1 > best_prec1
-        best_prec1 = max(prec1, best_prec1)
+        is_best = False
         save_checkpoint({
             'epoch': epoch + 1,
             'arch': args.arch,
@@ -225,70 +204,13 @@ def train(train_loader, model, criterion, optimizer, epoch):
         sys.stdout.flush()
 
 
-def validate(val_loader, model, criterion):
-    batch_time = AverageMeter()
-    cla_losses = AverageMeter()
-    yaw_losses = AverageMeter()
-    losses = AverageMeter()
-    top1 = AverageMeter()
-    top5 = AverageMeter()
-
-    # switch to evaluate mode
-    model.eval()
-
-    end = time.time()
-    for i, (input, target, yaw) in enumerate(val_loader):
-        target = target.cuda()
-        yaw = yaw.float().cuda()
-        # with torch.no_grad():
-        input_var = torch.autograd.Variable(input, volatile=True)
-        target_var = torch.autograd.Variable(target, volatile=True)
-        yaw_var = torch.autograd.Variable(yaw)
-
-        # compute output
-        pred_score = model(input_var, yaw_var)
-
-        loss = criterion(pred_score, target_var)
-
-        # measure accuracy and record loss
-        prec1, prec5 = accuracy(pred_score.data, target, topk=(1, 5))
-        # losses.update(loss.data[0], input.size(0))
-        # top1.update(prec1[0], input.size(0))
-        # top5.update(prec5[0], input.size(0))
-        losses.update(loss.item(), input.size(0))
-        top1.update(prec1.item(), input.size(0))
-        top5.update(prec5.item(), input.size(0))
-
-        # measure elapsed time
-        batch_time.update(time.time() - end)
-        end = time.time()
-
-        if i % args.print_freq == 0:
-            print('Test: [{0}/{1}]\t'
-                  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
-                  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-                  'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'
-                  'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'.format(
-                   i, len(val_loader), batch_time=batch_time, loss=losses, 
-                   top1=top1, top5=top5))
-
-    print(' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'
-          .format(top1=top1, top5=top5))
-
-    return top1.avg
-
-
 def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
 
     full_filename = os.path.join(args.model_dir, filename)
-    full_bestname = os.path.join(args.model_dir, args.arch+'_best.pth.tar')
-    torch.save(state, full_filename)
+    #torch.save(state, full_filename)   #save checkpoint.pth.tar every epoch
     epoch_num = state['epoch']
     if epoch_num%1==0 and epoch_num>=0:
         torch.save(state, full_filename.replace('checkpoint',args.arch+'_'+str(epoch_num)))
-    if is_best:
-        shutil.copyfile(full_filename, full_bestname)
-
 
 class AverageMeter(object): 
     """Computes and stores the average and current value"""
@@ -312,7 +234,7 @@ def adjust_learning_rate(optimizer, epoch):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     #lr = args.lr * (0.1 ** (epoch // 30))
     #if epoch in [int(args.epochs*0.8), int(args.epochs*0.9), int(args.epochs*0.95)]:
-    if epoch in [30, 45, 60, 80]:
+    if epoch in [10, 18, 28, 35]:
         for param_group in optimizer.param_groups:
             param_group['lr'] *= 0.1
 

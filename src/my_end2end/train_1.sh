@@ -1,4 +1,4 @@
-model_dir=model 
+model_dir=model_1
 if [ ! -d $model_dir ]; then
     mkdir $model_dir
 fi
@@ -8,11 +8,11 @@ if [ ! -d $log_dir ]; then
 fi
 
 curr_date=$(date +'%m_%d_%H_%M') 
-log_file="./log/$curr_date.log"
+log_file="./log/1yaw_$curr_date.log"
 
 # train the model with GPUs 0
-CUDA_VISIBLE_DEVICES=0 python main.py  \
+CUDA_VISIBLE_DEVICES=1 python main.py  \
     --end2end --lr 0.1   \
-    --batch-size 2 \
-    --model_dir $model_dir
+    --batch-size 256 \
+    --model_dir $model_dir \
     2>&1 | tee $log_file
