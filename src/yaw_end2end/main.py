@@ -15,6 +15,7 @@ import torchvision.models as models
 import torchvision.transforms as transforms
 
 from ResNet import resnet18, resnet50, resnet101
+from MobileNet import mobilenetv2
 from selfDefine import MsCelebDataset, CaffeCrop
 
 
@@ -25,10 +26,7 @@ model_names = sorted(name for name in models.__dict__
 
 parser = argparse.ArgumentParser(description='PyTorch CelebA Training')
 parser.add_argument('--img_dir', metavar='DIR', default='', help='path to dataset')
-parser.add_argument('--arch', '-a', metavar='ARCH', default='resnet18', choices=model_names,
-                    help='model architecture: ' +
-                        ' | '.join(model_names) +
-                        ' (default: alexnet)')
+parser.add_argument('--arch', '-a', metavar='ARCH', default='resnet18')
 parser.add_argument('-j', '--workers', default=5, type=int, metavar='N',
                     help='number of data loading workers (default: 16)')
 parser.add_argument('--epochs', default=80, type=int, metavar='N',
@@ -82,13 +80,15 @@ def main():
     
     # prepare model
     model = None
-    assert(args.arch in ['resnet18','resnet50','resnet101'])
+    assert(args.arch in ['resnet18','resnet50','resnet101', 'mobilenetv2'])
     if args.arch == 'resnet18':
         model = resnet18(pretrained=False, num_classes=class_num, end2end=args.end2end)
     if args.arch == 'resnet50':
         model = resnet50(pretrained=False, num_classes=class_num, end2end=args.end2end)
     if args.arch == 'resnet101':
         model = resnet101(pretrained=False, num_classes=class_num, end2end=args.end2end)
+    if args.arch == 'mobilenetv2':
+        model = mobilenetv2(pretrained=False, num_classes=class_num, end2end=args.end2end)
     model = torch.nn.DataParallel(model).cuda()
     
 
