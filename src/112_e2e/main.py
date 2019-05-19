@@ -16,6 +16,7 @@ import torchvision.transforms as transforms
 
 from ResNet import resnet18, resnet50, resnet101
 from MobileNet import mobilenetv2
+from MobileFaceNet import mobilefacenet
 from selfDefine import MsCelebDataset, CaffeCrop
 
 

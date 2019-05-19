@@ -13,7 +13,7 @@ log_file="./log/naive$curr_date.log"
 # train the model with GPUs 0
 CUDA_VISIBLE_DEVICES=0 python main.py  \
     --lr 0.1   \
-    --arch mobilenetv2 \
-    --batch-size 4 \
+    --arch mobilefacenet \
+    --batch-size 128 \
     --model_dir $model_dir \
     2>&1 | tee $log_file
