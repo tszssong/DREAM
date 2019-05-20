@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch.nn.functional as F
 import math
 
 __all__ = ['mobilefacenet']
@@ -84,6 +85,7 @@ class MobileFaceNet(nn.Module):
         self.fc_type = fc_type
         self.num_fmap_end = 512
         self.emb_size = emb_size
+        self.relu = nn.ReLU(inplace=True)
         # setting of inverted residual blocks
         self.cfgs = [
             # t, c, n, s
@@ -116,23 +118,44 @@ class MobileFaceNet(nn.Module):
             self.conv = conv_7x7_bn_noRelu(self.num_fmap_end, self.num_fmap_end, 1, self.num_fmap_end)  
             self.fc = nn.Linear(self.num_fmap_end, self.emb_size)        
             self.bn = nn.BatchNorm1d(self.emb_size,  affine=False)
-            self.classifier = nn.Linear(self.emb_size, num_classes)
+            
         elif fc_type == "GNAP":
             self.bn1 = nn.BatchNorm2d(self.num_fmap_end, affine=False)
             # not completed!
             # self.avgpool = nn.AvgPool2d(input_size // 32, stride=1)
+
+        if self.end2end:
+            self.fc1 = nn.Linear(self.emb_size, self.emb_size)
+            self.fc2 = nn.Linear(self.emb_size, self.emb_size)
+        self.classifier = nn.Linear(self.emb_size, num_classes)
+
         self._initialize_weights()
 
-    # def forward(self, x, yaw):
-    def forward(self, x):
+    def forward(self, x, yaw):
         x = self.features(x)
         if self.fc_type == "GDC": 
             x = self.conv(x)
             x = x.view(x.size(0), -1)
             x = self.fc(x)
-            x = self.bn(x)
-            x = self.classifier(x)
-        return x
+            mid_feature = self.bn(x)
+        if self.end2end:
+            raw_feature = self.fc1(mid_feature)
+            raw_feature = self.relu(raw_feature)
+            raw_feature = self.fc2(raw_feature)
+            raw_feature = self.relu(raw_feature)
+
+            yaw = yaw.view(yaw.size(0),1)
+            yaw = yaw.expand_as(raw_feature)
+            
+            feature = yaw * raw_feature + mid_feature
+        else:
+            feature = mid_feature
+
+        feature = F.dropout(feature, p=0.7, training=self.training)
+        pred_score = self.classifier(feature)
+
+        return pred_score
+
 
     def _initialize_weights(self):
         for m in self.modules():
