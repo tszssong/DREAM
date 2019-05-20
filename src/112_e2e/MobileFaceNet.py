@@ -77,9 +77,13 @@ class InvertedResidual(nn.Module):
 
 
 class MobileFaceNet(nn.Module):
-    def __init__(self, num_classes=1000, input_size=112, width_mult=1., end2end=False):
+    def __init__(self, num_classes=1000, input_size=112, width_mult=1., \
+                 fc_type = "GDC", emb_size = 128, end2end=False):
         super(MobileFaceNet, self).__init__()
         self.end2end = end2end
+        self.fc_type = fc_type
+        self.num_fmap_end = 512
+        self.emb_size = emb_size
         # setting of inverted residual blocks
         self.cfgs = [
             # t, c, n, s
@@ -94,37 +98,40 @@ class MobileFaceNet(nn.Module):
 
         # building first layer
         assert input_size % 16 == 0
-        # input_channel = _make_divisible(32 * width_mult, 8)
         input_channel = 64
         layers = [conv_3x3_bn(3, input_channel, 2)] #conv_1
         # building inverted residual blocks
         block = InvertedResidual
         for t, c, n, s in self.cfgs:
-            # output_channel = _make_divisible(c * width_mult, 8)
             output_channel = c
             layers.append(block(input_channel, output_channel, s, t))
             input_channel = output_channel
             for i in range(1, n):
                 layers.append(block(input_channel, output_channel, 1, t))
                 input_channel = output_channel
-        layers.append(conv_1x1_bn(256, 512))
+        layers.append(conv_1x1_bn(256, self.num_fmap_end))
         self.features = nn.Sequential(*layers)
         # building last several layers
-        # output_channel = _make_divisible(1280 * width_mult, 8) if width_mult > 1.0 else 1280
-        self.conv = conv_7x7_bn_noRelu(512, 512, 1, 512)           #GDC
-        self.fc = nn.Linear(512, 512)
-        self.bn = nn.BatchNorm1d(512,  affine=False)
-        # self.avgpool = nn.AvgPool2d(input_size // 32, stride=1)
-        self.classifier = nn.Linear(512, num_classes)
-
+        if fc_type == "GDC": 
+            self.conv = conv_7x7_bn_noRelu(self.num_fmap_end, self.num_fmap_end, 1, self.num_fmap_end)  
+            self.fc = nn.Linear(self.num_fmap_end, self.emb_size)        
+            self.bn = nn.BatchNorm1d(self.emb_size,  affine=False)
+            self.classifier = nn.Linear(self.emb_size, num_classes)
+        elif fc_type == "GNAP":
+            self.bn1 = nn.BatchNorm2d(self.num_fmap_end, affine=False)
+            # not completed!
+            # self.avgpool = nn.AvgPool2d(input_size // 32, stride=1)
         self._initialize_weights()
 
-    def forward(self, x, yaw):
+    # def forward(self, x, yaw):
+    def forward(self, x):
         x = self.features(x)
-        x = self.conv(x)
-        # x = self.avgpool(x)
-        x = x.view(x.size(0), -1)
-        x = self.classifier(x)
+        if self.fc_type == "GDC": 
+            x = self.conv(x)
+            x = x.view(x.size(0), -1)
+            x = self.fc(x)
+            x = self.bn(x)
+            x = self.classifier(x)
         return x
 
     def _initialize_weights(self):

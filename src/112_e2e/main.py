@@ -13,6 +13,7 @@ import torch.nn.functional as F
 import torchvision.datasets as datasets
 import torchvision.models as models
 import torchvision.transforms as transforms
+from torchsummary import summary
 
 from ResNet import resnet18, resnet50, resnet101
 from MobileNet import mobilenetv2
@@ -94,6 +95,7 @@ def main():
         model = mobilefacenet(pretrained=False, num_classes=class_num, end2end=args.end2end)
     model = torch.nn.DataParallel(model).cuda()
     
+    summary(model, (3,112,112))
 
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda()
@@ -158,7 +160,6 @@ def train(train_loader, model, criterion, optimizer, epoch):
     losses = AverageMeter()
     top1 = AverageMeter()
     top5 = AverageMeter()
-
     # switch to train mode
     model.train()
 
@@ -174,7 +175,8 @@ def train(train_loader, model, criterion, optimizer, epoch):
         target_var = torch.autograd.Variable(target)
 
         # compute output
-        pred_score = model(input_var, yaw_var)
+        pred_score = model(input_var)
+        # pred_score = model(input_var, yaw_var)
 
         loss = criterion(pred_score, target_var)
 
