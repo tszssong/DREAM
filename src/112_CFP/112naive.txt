@@ -1,0 +1,25 @@
+mobilefacenet_naive ../112_e2e/model_naive/mobilefacenet_1.pth.tar
+eval_cfp.py:130: UserWarning: volatile was removed and now has no effect. Use `with torch.no_grad():` instead.
+  input_var = torch.autograd.Variable(input, volatile=True)
+eval_cfp.py:131: UserWarning: volatile was removed and now has no effect. Use `with torch.no_grad():` instead.
+  yaw_var = torch.autograd.Variable(yaw, volatile=True)
+----- result for Frontal-Frontal -----
+Average auc: 0.9732310204081631
+Average eer: 0.08057142857142857
+----- result for Frontal-Profile -----
+Average auc: 0.8456718367346939
+Average eer: 0.23028571428571426
+
+mobilefacenet_naive ../112_e2e/model_naive/mobilefacenet_2.pth.tar
+eval_cfp.py:145: UserWarning: volatile was removed and now has no effect. Use `with torch.no_grad():` instead.
+  input_var = torch.autograd.Variable(input, volatile=True)
+eval_cfp.py:146: UserWarning: volatile was removed and now has no effect. Use `with torch.no_grad():` instead.
+  yaw_var = torch.autograd.Variable(yaw, volatile=True)
+----- result for Frontal-Frontal -----
+Average auc: 0.9871346938775509
+Average eer: 0.05714285714285715
+----- result for Frontal-Profile -----
+Average auc: 0.8838873469387755
+Average eer: 0.19457142857142856
+
+mobilefacenet_naive ../112_e2e/model_naive/mobilefacenet_3.pth.tar
