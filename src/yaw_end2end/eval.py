@@ -2,7 +2,6 @@ import argparse
 import os,sys,shutil
 import time
 import struct as st
-
 import torch
 import torch.nn as nn
 import torch.nn.parallel
@@ -13,15 +12,14 @@ import torch.utils.data
 import torchvision.datasets as datasets
 import torchvision.models as models
 import torchvision.transforms as transforms
-
-from selfDefine import CFPDataset, CaffeCrop
+import numpy as np
+from selfDefine import myDataset, CaffeCrop
 from ResNet import resnet18, resnet50, resnet101
-from eval_roc import eval_roc_main
 
+from PIL import Image
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
     and callable(models.__dict__[name]))
-
 
 parser = argparse.ArgumentParser(description='PyTorch CelebA Training')
 parser.add_argument('--img_dir', metavar='DIR', default='', help='path to dataset')
@@ -54,7 +52,6 @@ parser.add_argument('--pretrained', dest='pretrained', action='store_true',
 parser.add_argument('--model_dir','-m', default='./model', type=str)
 
 
-
 def extract_feat(arch, resume):
     global args, best_prec1
     args = parser.parse_args()
@@ -67,27 +64,13 @@ def extract_feat(arch, resume):
     arch = arch.split('_')[0]
 
     # load data and prepare dataset
-    frontal_list_file = '../../data/CFP/protocol/frontal_list_nonli.txt'
+    list_file = '/home/ubuntu/zms/data/ms1m_emore100/imgs.lst'
     caffe_crop = CaffeCrop('test')
-    frontal_dataset =  CFPDataset(args.img_dir, frontal_list_file,
-            transforms.Compose([caffe_crop,transforms.ToTensor()]))
-    frontal_loader = torch.utils.data.DataLoader(
-        frontal_dataset,
-        batch_size=args.batch_size, shuffle=False,
-        num_workers=args.workers, pin_memory=True)
-   
-    caffe_crop = CaffeCrop('test')
-    profile_list_file = '../../data/CFP/protocol/profile_list_nonli.txt'
-    profile_dataset =  CFPDataset(args.img_dir, profile_list_file, 
-            transforms.Compose([caffe_crop,transforms.ToTensor()]))
-    profile_loader = torch.utils.data.DataLoader(
-        profile_dataset,
-        batch_size=args.batch_size, shuffle=False,
-        num_workers=args.workers, pin_memory=True)
+    trans = transforms.Compose([caffe_crop,transforms.ToTensor()])
+    test_dataset = myDataset( list_file, transforms.Compose([caffe_crop,transforms.ToTensor()]))
 
-    class_num = 85742
-    #class_num = 180855
-    #class_num = 13386
+    class_num = 12
+    # class_num = 85742
     
     model = None
     assert(arch in ['resnet18','resnet50','resnet101'])
@@ -110,37 +93,35 @@ def extract_feat(arch, resume):
 
     cudnn.benchmark = True
     
-    data_num = len(frontal_dataset)
-    frontal_feat_file = './data/frontal_feat.bin'
+    data_num = len(test_dataset)
     feat_dim = 256
-    with open(frontal_feat_file, 'wb') as bin_f:
-        bin_f.write(st.pack('ii', data_num, feat_dim))
-        for i, (input, yaw) in enumerate(frontal_loader):
+    with open(list_file, 'r') as imf:
+        lines = imf.readlines()
+        for line in lines:
+            img_path, label = line.strip().split(' ')
+            label = int(label)
+            info_path = img_path.replace('.jpg', '.info')
+            with open(info_path, 'r') as infof:
+                infos = infof.readlines()
+            yaw = infos[0].strip().split(',')[1]
+            yaw = float(yaw)
+            yaw = np.array(yaw).reshape(1,-1)
+            img = Image.open(img_path).convert("RGB")
+            img = trans(img)
+            img = img.resize(1,3,112,112)
+            img = img.cuda()
+            # coef_yaw = torch.FloatTensor(yaw)
+
+            yaw = torch.from_numpy(yaw)
             yaw = yaw.float().cuda()
-            input_var = torch.autograd.Variable(input, volatile=True)
+            input_var = torch.autograd.Variable(img, volatile=True)
             yaw_var = torch.autograd.Variable(yaw, volatile=True)
             output = model(input_var, yaw_var)
+
             output_data = output.cpu().data.numpy()
             feat_num  = output.size(0)
-            
-            for j in range(feat_num):
-                bin_f.write(st.pack('f'*feat_dim, *tuple(output_data[j,:])))
-
-    data_num = len(profile_dataset.imgs)
-    profile_feat_file = './data/profile_feat.bin'
-    with open(profile_feat_file, 'wb') as bin_f:
-        bin_f.write(st.pack('ii', data_num, feat_dim))
-        for i, (input,yaw) in enumerate(profile_loader):
-            yaw = yaw.float().cuda()
-            input_var = torch.autograd.Variable(input, volatile=True)
-            yaw_var = torch.autograd.Variable(yaw, volatile=True)
-            output = model(input_var, yaw_var)
-            output_data = output.cpu().data.numpy()
-            feat_num  = output.size(0)
-            
-            for j in range(feat_num):
-                bin_f.write(st.pack('f'*feat_dim, *tuple(output_data[j,:])))
-
+            print(feat_num)
+            print(output_data)
 
 if __name__ == '__main__':
     
@@ -148,11 +129,10 @@ if __name__ == '__main__':
      #         ('resnet50_end2end', '../../data/model/cfp_res50_end2end.pth.tar'), ]
 
     #infos = [ ('resnet18_naive', '../yaw_end2end/model/resnet18_%d.pth.tar'%i) for i in range(1,81)]
-    infos = [ ('resnet18_end2end', '../my_end2end/model/resnet18_%d.pth.tar'%i) for i in range(1,81)]
-    
+    infos = [ ('resnet18_naive', './model_naive/resnet18_%d.pth.tar'%i) for i in range(1,81)]
 
     for arch, model_path in infos:
         print("{} {}".format(arch, model_path))
         extract_feat(arch, model_path)
-        eval_roc_main()
+        # eval_roc_main()
         print()

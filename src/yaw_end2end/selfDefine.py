@@ -2,7 +2,6 @@ import os, sys, shutil
 import random as rd
 import math
 import cv2
-
 from PIL import Image
 import numpy as np
 import torch
@@ -35,6 +34,39 @@ def load_imgs(img_dir, image_list_file, label_file):
     assert(label_num == max_label+1)
     return imgs, max_label
 
+def load_img_info(image_list_file):
+    imgs = list()
+    max_label = 0
+    with open(image_list_file, 'r') as imf:
+        lines = imf.readlines()
+        for line in lines:
+            img_path, label = line.strip().split(' ')
+            label = int(label)
+            max_label = max(max_label, label)
+            info_path = img_path.replace('.jpg', '.info')
+            with open(info_path) as infof:
+                infos = infof.readlines()
+            yaw = infos[0].strip().split(',')[1]
+            yaw = float(yaw)
+            coef_yaw = sigmoid(10.0*(abs(yaw)/45.0-1))
+            imgs.append((img_path, label, coef_yaw))
+    return imgs, max_label
+
+
+class myDataset(data.Dataset):
+    def __init__(self, image_list_file, transform=None):
+        self.imgs, self.max_label = load_img_info(image_list_file)
+        self.transform = transform
+
+    def __getitem__(self, index):
+        path, target, yaw = self.imgs[index]
+        img = Image.open(path).convert("RGB")
+        if self.transform is not None:
+            img = self.transform(img)
+        return img, target, yaw
+
+    def __len__(self):
+        return len(self.imgs)
 
 class MsCelebDataset(data.Dataset):
     def __init__(self, img_dir, image_list_file, label_file, transform=None):
@@ -59,14 +91,14 @@ class CaffeCrop(object):
         assert(phase=='train' or phase=='test')
         self.phase = phase
 
-    def __call__(self, img):
+    def __call__(self, img, size = 112):
         # pre determined parameters
-        final_size = 224
+        final_size = size
         final_width = final_height = final_size
         if self.phase == 'train':
-            crop_size = 220
+            crop_size = size - 10
         else:
-            crop_size = 110
+            crop_size = size
         crop_height = crop_width = crop_size
         crop_center_y_offset = 15
         crop_center_x_offset = 0
@@ -114,12 +146,14 @@ class CaffeCrop(object):
 
 if __name__ == '__main__':
     show_length = 3
-    show_size = 224
+    show_size = 112
     train_list_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/data/ms1m_emore_img/256_list.txt'
     train_label_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/data/ms1m_emore_img/256_label_angle.txt'
     caffe_crop = CaffeCrop('train')
-    train_dataset =  MsCelebDataset('./', train_list_file, train_label_file, 
-            transforms.Compose([caffe_crop,transforms.ToTensor()]))
+    # train_dataset =  MsCelebDataset('./', train_list_file, train_label_file,
+    train_list_file = '/home/ubuntu/zms/data/ms1m_emore_img/imgs256.lst'
+
+    train_dataset=myDataset(train_list_file, transforms.Compose([caffe_crop,transforms.ToTensor()]))
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=show_length*show_length, shuffle=True,
         num_workers=2, pin_memory=True)

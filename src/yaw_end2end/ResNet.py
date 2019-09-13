@@ -96,9 +96,10 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
 
-    def __init__(self, block, layers, num_classes=1000, end2end=True):
+    def __init__(self, block, layers, num_classes=1000,  extract_feature=False, end2end=True):
         self.inplanes = 64
         self.end2end = end2end
+        self.extract_feature = extract_feature
         super(ResNet, self).__init__()
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
                                bias=False)
