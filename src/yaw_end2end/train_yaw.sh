@@ -1,4 +1,4 @@
-model_dir=model_yaw 
+model_dir=model_yaw112 
 if [ ! -d $model_dir ]; then
     mkdir $model_dir
 fi
@@ -11,8 +11,8 @@ curr_date=$(date +'%m_%d_%H_%M')
 log_file="./log/yaw$curr_date.log"
 
 # train the model with GPUs 0
-CUDA_VISIBLE_DEVICES=2 python main.py  \
+CUDA_VISIBLE_DEVICES=1 python main.py  \
     --end2end --lr 0.1   \
-    --batch-size 256 \
+    --batch-size 1024 \
     --model_dir $model_dir \
     2>&1 | tee $log_file

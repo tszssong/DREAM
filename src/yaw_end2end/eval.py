@@ -64,13 +64,13 @@ def extract_feat(arch, resume):
     arch = arch.split('_')[0]
 
     # load data and prepare dataset
-    list_file = '/home/ubuntu/zms/data/ms1m_emore100/imgs.lst'
+    list_file = '/data03/zhengmeisong/data/ms1m_emore100/imgs.lst'
     caffe_crop = CaffeCrop('test')
     trans = transforms.Compose([caffe_crop,transforms.ToTensor()])
     test_dataset = myDataset( list_file, transforms.Compose([caffe_crop,transforms.ToTensor()]))
 
-    class_num = 12
-    # class_num = 85742
+    # class_num = 12
+    class_num = 85742
     
     model = None
     assert(arch in ['resnet18','resnet50','resnet101'])
@@ -120,17 +120,17 @@ def extract_feat(arch, resume):
 
             output_data = output.cpu().data.numpy()
             feat_num  = output.size(0)
-            print(feat_num)
-            print(output_data)
+            # print(feat_num)
+            print(feat_num, output_data.shape)
 
 if __name__ == '__main__':
     
     #infos = [ ('resnet50_naive', '../../data/model/cfp_res50_naive.pth.tar'), 
      #         ('resnet50_end2end', '../../data/model/cfp_res50_end2end.pth.tar'), ]
 
-    #infos = [ ('resnet18_naive', '../yaw_end2end/model/resnet18_%d.pth.tar'%i) for i in range(1,81)]
-    infos = [ ('resnet18_naive', './model_naive/resnet18_%d.pth.tar'%i) for i in range(1,81)]
-
+    # infos = [ ('resnet18_end2end', './model_yaw/resnet18_%d.pth.tar'%i) for i in range(1,81)]
+    # infos = [ ('resnet18_naive', './model_naive/resnet18_%d.pth.tar'%i) for i in range(1,81)]
+    infos = [ ('resnet18_end2end', './model_yaw/resnet18_79.pth.tar') ]
     for arch, model_path in infos:
         print("{} {}".format(arch, model_path))
         extract_feat(arch, model_path)

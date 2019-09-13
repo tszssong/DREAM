@@ -16,18 +16,17 @@ import torchvision.transforms as transforms
 
 from ResNet import resnet18, resnet50, resnet101
 from MobileNet import mobilenetv2
-from selfDefine import MsCelebDataset, CaffeCrop
+from selfDefine import MsCelebDataset, myDataset, CaffeCrop
 
 
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
     and callable(models.__dict__[name]))
 
-
 parser = argparse.ArgumentParser(description='PyTorch CelebA Training')
 parser.add_argument('--img_dir', metavar='DIR', default='', help='path to dataset')
 parser.add_argument('--arch', '-a', metavar='ARCH', default='resnet18')
-parser.add_argument('-j', '--workers', default=5, type=int, metavar='N',
+parser.add_argument('-j', '--workers', default=4, type=int, metavar='N',
                     help='number of data loading workers (default: 16)')
 parser.add_argument('--epochs', default=80, type=int, metavar='N',
                     help='number of total epochs to run')
@@ -54,7 +53,6 @@ parser.add_argument('--end2end', action='store_true',\
         help='if true, using end2end with dream block, else, using naive architecture')
 
 best_prec1 = 0   
-
      
 def main():
     global args, best_prec1  
@@ -64,11 +62,15 @@ def main():
     print('[end2end?:]', args.end2end, '[workers:]', args.workers)
     print('[batchsize:]', args.batch_size, '[lr:]', args.lr, '[epochs:]', args.epochs)
     print('[net:]', args.arch, '[resume:]',args.resume, '[pretrained:]', args.pretrained)
-
+    sys.stdout.flush()
     train_list_file = '../../../../../data/ms1m_emore_img/total_list.txt'
     train_label_file = '../../../../../data/ms1m_emore_img/total_label_angle.txt'
     caffe_crop = CaffeCrop('train')
-    train_dataset =  MsCelebDataset(args.img_dir, train_list_file, train_label_file, 
+    # train_dataset =  MsCelebDataset(args.img_dir, train_list_file, train_label_file, 
+            # transforms.Compose([caffe_crop,transforms.ToTensor()]))
+    train_list = '/data03/zhengmeisong/data/ms1m_emore_img/imgs.lst'
+    # train_list = '/data03/zhengmeisong/data/ms1m_emore100/imgs.lst'
+    train_dataset =  myDataset(train_list,
             transforms.Compose([caffe_crop,transforms.ToTensor()]))
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
@@ -231,12 +233,11 @@ class AverageMeter(object):
         self.count += n
         self.avg = self.sum / self.count
 
-
 def adjust_learning_rate(optimizer, epoch):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     #lr = args.lr * (0.1 ** (epoch // 30))
     #if epoch in [int(args.epochs*0.8), int(args.epochs*0.9), int(args.epochs*0.95)]:
-    if epoch in [10, 18, 28, 35]:
+    if epoch in [8, 12, 20, 30]:
         for param_group in optimizer.param_groups:
             param_group['lr'] *= 0.1
 
