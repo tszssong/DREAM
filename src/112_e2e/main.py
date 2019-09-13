@@ -13,9 +13,11 @@ import torch.nn.functional as F
 import torchvision.datasets as datasets
 import torchvision.models as models
 import torchvision.transforms as transforms
+from torchsummary import summary
 
 from ResNet import resnet18, resnet50, resnet101
 from MobileNet import mobilenetv2
+from MobileFaceNet import mobilefacenet
 from selfDefine import MsCelebDataset, CaffeCrop
 
 
@@ -92,7 +94,6 @@ def main():
     if args.arch == 'mobilefacenet':
         model = mobilefacenet(pretrained=False, num_classes=class_num, end2end=args.end2end)
     model = torch.nn.DataParallel(model).cuda()
-    
 
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda()
@@ -157,7 +158,6 @@ def train(train_loader, model, criterion, optimizer, epoch):
     losses = AverageMeter()
     top1 = AverageMeter()
     top5 = AverageMeter()
-
     # switch to train mode
     model.train()
 
@@ -236,7 +236,7 @@ def adjust_learning_rate(optimizer, epoch):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     #lr = args.lr * (0.1 ** (epoch // 30))
     #if epoch in [int(args.epochs*0.8), int(args.epochs*0.9), int(args.epochs*0.95)]:
-    if epoch in [10, 18, 28, 35]:
+    if epoch in [20, 30, 48, 55]:
         for param_group in optimizer.param_groups:
             param_group['lr'] *= 0.1
 
