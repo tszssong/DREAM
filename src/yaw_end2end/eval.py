@@ -101,18 +101,14 @@ def extract_feat(arch, resume):
         model = resnet101(pretrained=False, num_classes=class_num,\
                 extract_feature=True, end2end=end2end)
 
-
     model = torch.nn.DataParallel(model).cuda()
     model.eval()
-
-
 
     assert(os.path.isfile(resume))
     checkpoint = torch.load(resume)
     model.load_state_dict(checkpoint['state_dict'])
 
     cudnn.benchmark = True
-
     
     data_num = len(frontal_dataset)
     frontal_feat_file = './data/frontal_feat.bin'

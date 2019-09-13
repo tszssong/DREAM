@@ -6,6 +6,9 @@
 *.pyc
 *.swp
 *.zip
+*.txt
+*.code-workspace
+*/*_end2end/model_*
 
 pick_data.py
 eval_res.txt
