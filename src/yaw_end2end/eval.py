@@ -8,6 +8,7 @@ import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.optim
 import torch.utils.data
+import torch.nn.functional as F
 #import transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
@@ -15,6 +16,7 @@ import torchvision.transforms as transforms
 import numpy as np
 from selfDefine import myDataset, CaffeCrop
 from ResNet import resnet18, resnet50, resnet101
+
 
 from PIL import Image
 model_names = sorted(name for name in models.__dict__
@@ -60,16 +62,14 @@ def extract_feat(arch, resume):
         end2end=True
     else:
         end2end=False
-
     arch = arch.split('_')[0]
 
     # load data and prepare dataset
-    list_file = '/data03/zhengmeisong/data/ms1m_emore100/imgs.lst'
+    # list_file = '/data03/zhengmeisong/data/ms1m_emore100/imgs.lst'
+    list_file = '/data03/zhengmeisong/wkspace/FR/doorbell/logs/ai_all_smallface_picked.lst'
     caffe_crop = CaffeCrop('test')
     trans = transforms.Compose([caffe_crop,transforms.ToTensor()])
-    test_dataset = myDataset( list_file, transforms.Compose([caffe_crop,transforms.ToTensor()]))
-
-    # class_num = 12
+    
     class_num = 85742
     
     model = None
@@ -93,46 +93,40 @@ def extract_feat(arch, resume):
 
     cudnn.benchmark = True
     
-    data_num = len(test_dataset)
-    feat_dim = 256
     with open(list_file, 'r') as imf:
         lines = imf.readlines()
         for line in lines:
             img_path, label = line.strip().split(' ')
-            label = int(label)
+            img = Image.open(img_path).convert("RGB")
+            img = trans(img)
+            img = img.resize(1,3,112,112)
+            img = img.cuda()
+            
             info_path = img_path.replace('.jpg', '.info')
             with open(info_path, 'r') as infof:
                 infos = infof.readlines()
             yaw = infos[0].strip().split(',')[1]
             yaw = float(yaw)
             yaw = np.array(yaw).reshape(1,-1)
-            img = Image.open(img_path).convert("RGB")
-            img = trans(img)
-            img = img.resize(1,3,112,112)
-            img = img.cuda()
-            # coef_yaw = torch.FloatTensor(yaw)
-
             yaw = torch.from_numpy(yaw)
             yaw = yaw.float().cuda()
+
             input_var = torch.autograd.Variable(img, volatile=True)
             yaw_var = torch.autograd.Variable(yaw, volatile=True)
-            output = model(input_var, yaw_var)
+            output,fea = model(input_var, yaw_var)
 
+            nFea = F.normalize(fea).detach()
+            nFea = nFea[0].cpu().numpy()
+            fea_path = img_path.replace('.jpg', '.ft')
+            np.savetxt(fea_path, nFea)
             output_data = output.cpu().data.numpy()
             feat_num  = output.size(0)
-            # print(feat_num)
-            print(feat_num, output_data.shape)
+            print(img_path[-10:], feat_num, nFea.shape, output_data.shape)
 
 if __name__ == '__main__':
     
-    #infos = [ ('resnet50_naive', '../../data/model/cfp_res50_naive.pth.tar'), 
-     #         ('resnet50_end2end', '../../data/model/cfp_res50_end2end.pth.tar'), ]
-
-    # infos = [ ('resnet18_end2end', './model_yaw/resnet18_%d.pth.tar'%i) for i in range(1,81)]
-    # infos = [ ('resnet18_naive', './model_naive/resnet18_%d.pth.tar'%i) for i in range(1,81)]
-    infos = [ ('resnet18_end2end', './model_yaw/resnet18_79.pth.tar') ]
+    infos = [ ('resnet18_end2end', './model_yaw112/resnet18_14.pth.tar') ]
     for arch, model_path in infos:
         print("{} {}".format(arch, model_path))
         extract_feat(arch, model_path)
-        # eval_roc_main()
-        print()
+        print('done!')

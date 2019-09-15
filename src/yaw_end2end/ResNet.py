@@ -116,7 +116,7 @@ class ResNet(nn.Module):
             self.fc1 = nn.Linear(256, 256)
             self.fc2 = nn.Linear(256, 256)
         self.fc = nn.Linear(256, num_classes)
-
+        
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
@@ -172,11 +172,11 @@ class ResNet(nn.Module):
         else:
             feature = mid_feature
 
-        
         feature = F.dropout(feature, p=0.7, training=self.training)
+        fea = feature
         pred_score = self.fc(feature)
 
-        return pred_score
+        return pred_score, fea
 
 
 def resnet18(pretrained=False, **kwargs):

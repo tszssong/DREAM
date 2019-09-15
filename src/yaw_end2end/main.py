@@ -18,7 +18,6 @@ from ResNet import resnet18, resnet50, resnet101
 from MobileNet import mobilenetv2
 from selfDefine import MsCelebDataset, myDataset, CaffeCrop
 
-
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
     and callable(models.__dict__[name]))
@@ -63,11 +62,8 @@ def main():
     print('[batchsize:]', args.batch_size, '[lr:]', args.lr, '[epochs:]', args.epochs)
     print('[net:]', args.arch, '[resume:]',args.resume, '[pretrained:]', args.pretrained)
     sys.stdout.flush()
-    train_list_file = '../../../../../data/ms1m_emore_img/total_list.txt'
-    train_label_file = '../../../../../data/ms1m_emore_img/total_label_angle.txt'
+  
     caffe_crop = CaffeCrop('train')
-    # train_dataset =  MsCelebDataset(args.img_dir, train_list_file, train_label_file, 
-            # transforms.Compose([caffe_crop,transforms.ToTensor()]))
     train_list = '/data03/zhengmeisong/data/ms1m_emore_img/imgs.lst'
     # train_list = '/data03/zhengmeisong/data/ms1m_emore100/imgs.lst'
     train_dataset =  myDataset(train_list,
@@ -95,7 +91,6 @@ def main():
         model = mobilefacenet(pretrained=False, num_classes=class_num, end2end=args.end2end)
     model = torch.nn.DataParallel(model).cuda()
     
-
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda()
 
@@ -162,7 +157,6 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
     # switch to train mode
     model.train()
-
     end = time.time()
     for i, (input, target, yaw) in enumerate(train_loader):
         # measure data loading time
@@ -175,15 +169,13 @@ def train(train_loader, model, criterion, optimizer, epoch):
         target_var = torch.autograd.Variable(target)
 
         # compute output
-        pred_score = model(input_var, yaw_var)
+        pred_score,_ = model(input_var, yaw_var)
 
         loss = criterion(pred_score, target_var)
 
         # measure accuracy and record loss
         prec1, prec5 = accuracy(pred_score.data, target, topk=(1, 5))
-        # losses.update(loss.data[0], input.size(0))
-        # top1.update(prec1[0], input.size(0))
-        # top5.update(prec5[0], input.size(0))
+
         losses.update(loss.item(),  1)
         top1.update(prec1.item(), 1)
         top5.update(prec5.item(), 1)
