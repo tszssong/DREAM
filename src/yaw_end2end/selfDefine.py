@@ -87,24 +87,25 @@ class CaffeCrop(object):
     """
     This class take the same behavior as sensenet
     """
-    def __init__(self, phase):
+    def __init__(self, phase, size=112):
         assert(phase=='train' or phase=='test')
         self.phase = phase
+        self.size = size
 
-    def __call__(self, img, size = 112):
+    def __call__(self, img):
         # pre determined parameters
-        final_size = size
+        final_size = self.size
         final_width = final_height = final_size
         if self.phase == 'train':
-            crop_size = size - 10
+            crop_size = self.size #- 0.1*self.size
         else:
-            crop_size = size
+            crop_size = self.size
         crop_height = crop_width = crop_size
-        crop_center_y_offset = 15
+        crop_center_y_offset = 0
         crop_center_x_offset = 0
         if self.phase == 'train':
-            scale_aug = 0.02
-            trans_aug = 0.01
+            scale_aug = 0.0
+            trans_aug = 0.0
         else:
             scale_aug = 0.0
             trans_aug = 0.0
@@ -146,14 +147,18 @@ class CaffeCrop(object):
 
 if __name__ == '__main__':
     show_length = 3
-    show_size = 112
+    show_size = 56
     train_list_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/data/ms1m_emore_img/256_list.txt'
     train_label_file = '/media/ubuntu/9a42e1da-25d8-4345-a954-4abeadf1bd02/home/ubuntu/song/data/ms1m_emore_img/256_label_angle.txt'
-    caffe_crop = CaffeCrop('train')
+    caffe_crop = CaffeCrop('train', size=show_size)
     # train_dataset =  MsCelebDataset('./', train_list_file, train_label_file,
     train_list_file = '/home/ubuntu/zms/data/ms1m_emore_img/imgs256.lst'
 
-    train_dataset=myDataset(train_list_file, transforms.Compose([caffe_crop,transforms.ToTensor()]))
+    # train_dataset=myDataset(train_list_file, transforms.Compose([caffe_crop,transforms.ToTensor()]))
+    train_transform = transforms.Compose([ transforms.Resize([show_size+8, show_size+8]),
+                                           transforms.RandomCrop([show_size, show_size]),
+                                           transforms.RandomHorizontalFlip(), transforms.ToTensor()])
+    train_dataset=myDataset(train_list_file, train_transform )
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=show_length*show_length, shuffle=True,
         num_workers=2, pin_memory=True)
