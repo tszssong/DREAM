@@ -66,8 +66,13 @@ def main():
     caffe_crop = CaffeCrop('train')
     train_list = '/data03/zhengmeisong/data/ms1m_emore_img/imgs.lst'
     # train_list = '/data03/zhengmeisong/data/ms1m_emore100/imgs.lst'
-    train_dataset =  myDataset(train_list,
-            transforms.Compose([caffe_crop,transforms.ToTensor()]))
+    # train_dataset =  myDataset(train_list,
+    #         transforms.Compose([caffe_crop,transforms.ToTensor()]))
+    input_size = 56
+    train_transform = transforms.Compose([ transforms.Resize([input_size+8, input_size+8]),
+                                           transforms.RandomCrop([input_size, input_size]),
+                                           transforms.RandomHorizontalFlip(), transforms.ToTensor()])
+    train_dataset = myDataset(train_list, train_transform )
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=args.batch_size, shuffle=True,
@@ -229,7 +234,7 @@ def adjust_learning_rate(optimizer, epoch):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
     #lr = args.lr * (0.1 ** (epoch // 30))
     #if epoch in [int(args.epochs*0.8), int(args.epochs*0.9), int(args.epochs*0.95)]:
-    if epoch in [8, 12, 20, 30]:
+    if epoch in [4, 8, 12, 20]:
         for param_group in optimizer.param_groups:
             param_group['lr'] *= 0.1
 

@@ -1,4 +1,4 @@
-model_dir=model_yaw112 
+model_dir=model_yaw56
 if [ ! -d $model_dir ]; then
     mkdir $model_dir
 fi
